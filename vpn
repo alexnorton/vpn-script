@@ -6,24 +6,19 @@
 
   console.log("Getting credentials");
 
-  const oktaJson = currentApp.doShellScript(
+  const itemJson = currentApp.doShellScript(
     '/usr/local/bin/op item get "Okta" --format json'
   );
-  const okta = JSON.parse(oktaJson);
+  const item = JSON.parse(itemJson);
 
-  const getField = (label) =>
-    okta.fields.find((field) => field.label === label);
-
-  const username = getField("username").value;
-  const password = getField("password").value;
-  const otp = getField("one-time password").totp;
+  const username = getField(item, "username").value;
+  const password = getField(item, "password").value;
+  const otp = getField(item, "one-time password").totp;
 
   console.log("Got credentials");
 
   const systemEvents = Application("System Events");
   const globalProtect = systemEvents.processes.byName("GlobalProtect");
-
-  debugger;
 
   console.log("Opening GlobalProtect");
 
@@ -33,28 +28,11 @@
 
   const window = globalProtect.windows[0];
 
-  const waitForButton = (name) => {
-    let button = null;
-
-    while (!button) {
-      for (let i = 0; i < window.buttons.length; i++) {
-        if (window.buttons[i].name() === name) {
-          button = window.buttons[i];
-          break;
-        }
-      }
-
-      delay(0.1);
-    }
-
-    return button;
-  };
-
   console.log("Initiating connection");
 
-  waitForButton("Connect").click();
+  waitForButton(window, "Connect").click();
 
-  const signInButton = waitForButton("Sign In");
+  const signInButton = waitForButton(window, "Sign In");
 
   console.log("Initiated connection");
 
@@ -67,7 +45,7 @@
 
   signInButton.click();
 
-  const okButton = waitForButton("OK");
+  const okButton = waitForButton(window, "OK");
 
   console.log("Filling one-time password");
 
@@ -79,3 +57,24 @@
 
   console.log("Done");
 })();
+
+function getField(item, label) {
+  return item.fields.find((field) => field.label === label);
+}
+
+function waitForButton(window, name) {
+  let button = null;
+
+  while (!button) {
+    for (let i = 0; i < window.buttons.length; i++) {
+      if (window.buttons[i].name() === name) {
+        button = window.buttons[i];
+        break;
+      }
+    }
+
+    delay(0.1);
+  }
+
+  return button;
+}
