@@ -1,0 +1,81 @@
+#!/usr/bin/env osascript -l JavaScript
+
+(() => {
+  const currentApp = Application.currentApplication();
+  currentApp.includeStandardAdditions = true;
+
+  console.log("Getting credentials");
+
+  const oktaJson = currentApp.doShellScript(
+    '/usr/local/bin/op item get "Okta" --format json'
+  );
+  const okta = JSON.parse(oktaJson);
+
+  const getField = (label) =>
+    okta.fields.find((field) => field.label === label);
+
+  const username = getField("username").value;
+  const password = getField("password").value;
+  const otp = getField("one-time password").totp;
+
+  console.log("Got credentials");
+
+  const systemEvents = Application("System Events");
+  const globalProtect = systemEvents.processes.byName("GlobalProtect");
+
+  debugger;
+
+  console.log("Opening GlobalProtect");
+
+  globalProtect.menuBars[1].menuBarItems[0].click();
+
+  console.log("Opened GlobalProtect");
+
+  const window = globalProtect.windows[0];
+
+  const waitForButton = (name) => {
+    let button = null;
+
+    while (!button) {
+      for (let i = 0; i < window.buttons.length; i++) {
+        if (window.buttons[i].name() === name) {
+          button = window.buttons[i];
+          break;
+        }
+      }
+
+      delay(0.1);
+    }
+
+    return button;
+  };
+
+  console.log("Initiating connection");
+
+  waitForButton("Connect").click();
+
+  const signInButton = waitForButton("Sign In");
+
+  console.log("Initiated connection");
+
+  console.log("Filling login");
+
+  window.textFields[0].value = username;
+  window.textFields[1].value = password;
+
+  console.log("Submitting login");
+
+  signInButton.click();
+
+  const okButton = waitForButton("OK");
+
+  console.log("Filling one-time password");
+
+  window.textFields[0].value = otp;
+
+  console.log("Submitting one-time password");
+
+  okButton.click();
+
+  console.log("Done");
+})();
