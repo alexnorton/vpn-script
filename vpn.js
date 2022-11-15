@@ -7,7 +7,7 @@
   console.log("Getting credentials");
 
   const itemJson = currentApp.doShellScript(
-    '/usr/local/bin/op item get "Okta" --format json'
+    '/usr/local/bin/op item get "Okta" --account my --format json'
   );
   const item = JSON.parse(itemJson);
 
