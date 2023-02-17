@@ -1,13 +1,20 @@
 #!/usr/bin/env osascript -l JavaScript
 
-(() => {
+function run(args) {
+  const itemName = args[0];
+  const account = args[1] || "my";
+
+  if (!itemName || args.includes('--help')) {
+    return 'Usage: vpn.js [item name] [account]';
+  }
+
   const currentApp = Application.currentApplication();
   currentApp.includeStandardAdditions = true;
 
   console.log("Getting credentials");
 
   const itemJson = currentApp.doShellScript(
-    '/usr/local/bin/op item get "Okta" --account my --format json'
+    `/usr/local/bin/op item get "${itemName}" --account ${account} --format json`
   );
   const item = JSON.parse(itemJson);
 
@@ -56,7 +63,7 @@
   okButton.click();
 
   console.log("Done");
-})();
+}
 
 function getField(item, label) {
   return item.fields.find((field) => field.label === label);
