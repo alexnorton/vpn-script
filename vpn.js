@@ -86,7 +86,9 @@ function waitForButton(window, name) {
         break;
       }
     }
+
     delay(0.1);
   }
+
   return button;
 }
