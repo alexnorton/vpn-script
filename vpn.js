@@ -13,8 +13,9 @@ function run(args) {
 
   console.log("Getting credentials");
 
+  // change this to the path of your 1Password CLI
   const itemJson = currentApp.doShellScript(
-    `/opt/homebrew/bin/op item get "${itemName}" --account ${account} --format json`
+    `/usr/local/bin/op item get "${itemName}" --account ${account} --format json`
   );
   const item = JSON.parse(itemJson);
 
@@ -52,7 +53,7 @@ function run(args) {
   window.textFields[1].value = password;
 
   console.log("Submitting login");
-  
+
   signInButton.click();
   delay(3);
 
