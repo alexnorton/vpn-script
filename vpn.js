@@ -13,6 +13,7 @@ function run(args) {
 
   console.log("Getting credentials");
 
+  // change this to the path of your 1Password CLI
   const itemJson = currentApp.doShellScript(
     `/usr/local/bin/op item get "${itemName}" --account ${account} --format json`
   );
@@ -32,37 +33,43 @@ function run(args) {
   globalProtect.menuBars[1].menuBarItems[0].click();
 
   console.log("Opened GlobalProtect");
-
+  delay(0.1);
   const window = globalProtect.windows[0];
 
   console.log("Initiating connection");
 
   waitForButton(window, "Connect").click();
 
-  const signInButton = waitForButton(window, "Sign In");
+  const signInButton = waitForButton(window, "Connect");
 
   console.log("Initiated connection");
 
   console.log("Filling login");
 
+  // Use select() to focus the field before setting the value, in case the field already has a value
+  window.textFields[0].select();
   window.textFields[0].value = username;
+  window.textFields[1].select();
   window.textFields[1].value = password;
 
   console.log("Submitting login");
 
   signInButton.click();
+  delay(3);
 
-  const okButton = waitForButton(window, "OK");
+  if (window.staticTexts.length > 1 && window.staticTexts[1].value() === "Verification code") {
+    const verifyButton = waitForButton(window, "Verify");
+    console.log("Filling one-time password");
 
-  console.log("Filling one-time password");
+    window.textFields[0].select();
+    window.textFields[0].value = otp;
+    console.log("Submitting one-time password");
 
-  window.textFields[0].value = otp;
-
-  console.log("Submitting one-time password");
-
-  okButton.click();
-
-  console.log("Done");
+    verifyButton.click();
+  } else {
+    console.log("No one-time password required")
+  }
+  console.log("Done!");
 }
 
 function getField(item, label) {
